@@ -1,7 +1,9 @@
-# 💤 autoastt LazyVim Configuration
+# autoastt's zsh config
 
-## Additions From Starter Pack
-- Add themes in `color-scheme.lua`
-- Use `competitest.nvim` and add shortcuts
-- Use `esqueleto.nvim` for template when creating a new `.cpp` file (template is in `/skeletons`)
-- Use `rainbow-delimiters.nvim` for rainbow parentheses
+* lazyvim
+  - Add `competitest.nvim` and shortcuts
+  - Add `esqueleto.nvim` for template when creating a new `.cpp` file (template is in `/skeletons`)
+* tmux
+  - Add catppuccin theme and keybindings
+* starship
+* fastfetch
