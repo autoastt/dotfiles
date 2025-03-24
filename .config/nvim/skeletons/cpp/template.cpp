@@ -25,6 +25,11 @@ using vll = vector<ll>;
 #define rrep3(i, a, b, c) for (int i = a; i >= b; i -= c)
 #define NL '\n'
 
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+template <typename T>
+using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+
 const bool CASES = true;
 const int N = 2e5 + 5;
 const int M = 1e9 + 7;

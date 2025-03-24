@@ -11,6 +11,7 @@ $git_branch\
 $git_status\
 [](fg:green bg:teal)\
 $c\
+$custom\
 $rust\
 $golang\
 $nodejs\
@@ -20,11 +21,14 @@ $kotlin\
 $haskell\
 $python\
 [](fg:teal bg:blue)\
+$conda\
+[](fg:blue bg:lavender)\
 $docker_context\
-[](fg:blue bg:purple)\
+[](fg:lavender bg:purple)\
 $time\
 [ ](fg:purple)\
-$line_break$character"""
+$line_break$character
+"""
 
 palette = 'catppuccin_mocha'
 
@@ -131,6 +135,13 @@ symbol = " "
 style = "bg:teal"
 format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
 
+[custom.cpp]
+detect_extensions = ['cpp', 'hpp']
+symbol = " "
+style = "bg:teal"
+format = '[[ $symbol(v$output) ](fg:base bg:teal)]($style)'
+command = "g++-14 --version | awk 'NR==1{print $5}'"
+
 [rust]
 symbol = ""
 style = "bg:teal"
@@ -165,6 +176,11 @@ format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
 symbol = ""
 style = "bg:teal"
 format = '[[ $symbol( $version) ](fg:base bg:teal)]($style)'
+
+[conda]
+symbol = ""
+style = "bg:blue"
+format = '[[ $symbol( $environment) ](fg:base bg:blue)]($style)'
 
 [docker_context]
 symbol = ""
