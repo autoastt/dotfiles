@@ -3,6 +3,10 @@
 > Clone to home directory and add symbolic links to each config
 
 ```bash
+ln -s ~/dotfiles/.config ~/.config
+ln -s ~/dotfiles/.tmux ~/.tmux
+ln -s ~/dotfiles/.zsh ~/.zsh
+ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
 ln -s ~/dotfiles/.zshrc ~/.zshrc
 ```
 
