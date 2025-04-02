@@ -29,6 +29,7 @@ using vll = vector<ll>;
 using namespace __gnu_pbds;
 template <typename T>
 using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+mt19937 mt(chrono::steady_clock::now().time_since_epoch().count());
 
 const bool CASES = true;
 const int N = 2e5 + 5;

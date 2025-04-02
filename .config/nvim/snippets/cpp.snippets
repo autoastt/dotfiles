@@ -57,7 +57,7 @@ snippet mini
 
 snippet fenwick
   template <class T>
-  struct Fenwick<T> {
+  struct Fenwick {
       int n;
       vector<T> fw;
       vector<T> arr;
@@ -65,7 +65,7 @@ snippet fenwick
       Fenwick(int n) : n(n), fw(n + 1), arr(n + 1) {}
 
       void set(int i, T x) {
-          add(i, val - a[i]);
+          add(i, x - arr[i]);
       }
 
       void add(int i, T x) {
