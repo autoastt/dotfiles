@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
+using namespace __gnu_pbds;
 using ll = long long;
 using pii = pair<int, int>;
 using pll = pair<ll, ll>;
@@ -25,11 +27,11 @@ using vll = vector<ll>;
 #define rrep3(i, a, b, c) for (int i = a; i >= b; i -= c)
 #define NL '\n'
 
-#include <ext/pb_ds/assoc_container.hpp>
-using namespace __gnu_pbds;
-template <typename T>
+template <class T>
 using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+
 mt19937 mt(chrono::steady_clock::now().time_since_epoch().count());
+mt19937_64 mt64(chrono::steady_clock::now().time_since_epoch().count());
 
 const bool CASES = true;
 const int N = 2e5 + 5;
