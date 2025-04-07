@@ -85,5 +85,54 @@ snippet fenwick
   }
 
 snippet segtree
-  // to be written
+  template <class T, auto op>
+  struct SegmentTree {
+      int n;
+      vector<T> a, t;
+      T e;
+
+      SegmentTree(int n, T e): n(n), a(n + 1, e), t(4 * n), e(e) {};
+      SegmentTree(vector<T> a, T e): n(sz(a) - 1), a(a), t(4 * n), e(e) {};
+
+      void build(int x, int tl, int tr) {
+          if (tl == tr) {
+              t[x] = a[tl];
+              return;
+          }
+          int m = (tl + tr) / 2;
+          build(x * 2, tl, m);
+          build(x * 2 + 1, m + 1, tr);
+          t[x] = op(t[x * 2], t[x * 2 + 1]);
+      }
+
+      void upd(int idx, T val, int x, int tl, int tr) {
+          if (tl == tr) {
+              t[x] = a[tl] = val;
+              return;
+          }
+          int m = (tl + tr) / 2;
+          if (idx <= m) upd(idx, val, x * 2, tl, m);
+          else upd(idx, val, x * 2 + 1, m + 1, tr);
+          t[x] = op(t[x * 2], t[x * 2 + 1]);
+      }
+
+      T query(int l, int r, int x, int tl, int tr) {
+          if (tl < l || r < tr) return e;
+          else if (l <= tl && tr <= r) return t[x];
+          int m = (tl + tr) / 2;
+          return op(query(l, r, x * 2, tl, m), query(l, r, x * 2 + 1, m + 1, tr));
+      }
+
+      void build() {
+          build(1, 1, n);
+      }
+
+      void upd(int idx, T val) {
+          upd(idx, val, 1, 1, n);
+      }
+
+      T query(int l, int r) {
+          return query(l, r, 1, 1, n);
+      }
+  };
 
