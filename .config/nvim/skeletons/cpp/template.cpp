@@ -13,6 +13,8 @@ using vll = vector<ll>;
 #define sz(x) int((x).size())
 #define all(x) (x).begin(), (x).end()
 #define rall(x) (x).rbegin(), (x).rend()
+#define chmi(x,y, ...) x = min(__VA_OPT__({) x, y __VA_OPT__(,)__VA_ARGS__ __VA_OPT__(}))
+#define chma(x,y, ...) x = max(__VA_OPT__({) x, y __VA_OPT__(,)__VA_ARGS__ __VA_OPT__(}))
 
 #define GET_MACRO(_1, _2, _3, _4, NAME,...) NAME
 #define rep(...) GET_MACRO(__VA_ARGS__, rep3, rep2, rep1, rep0)(__VA_ARGS__)
