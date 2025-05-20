@@ -22,18 +22,16 @@ snippet fenwick
           return ret;
       }
 
-      T sum(int l, int r) {
-          return sum(r) - sum(l - 1);
-      }
+      T sum(int l, int r) { return sum(r) - sum(l - 1); }
   };
 
 snippet segtree
-  template <class T, auto op, T e>
+  template <class T, auto op, auto e>
   struct SegmentTree {
       int n;
       vector<T> a, t;
 
-      SegmentTree(int n) : n(n), a(n + 1, e), t(4 * n) {};
+      SegmentTree(int n) : n(n), a(n + 1, e()), t(4 * n) {};
       SegmentTree(vector<T> a) : n(sz(a) - 1), a(a), t(4 * n) {};
 
       void build(int x, int tl, int tr) {
@@ -59,23 +57,15 @@ snippet segtree
       }
 
       T query(int l, int r, int x, int tl, int tr) {
-          if (tr < l || r < tl) return e;
+          if (tr < l || r < tl) return e();
           else if (l <= tl && tr <= r) return t[x];
           int m = (tl + tr) / 2;
           return op(query(l, r, x * 2, tl, m), query(l, r, x * 2 + 1, m + 1, tr));
       }
 
-      void build() {
-          build(1, 1, n);
-      }
-
-      void upd(int idx, T val) {
-          upd(idx, val, 1, 1, n);
-      }
-
-      T query(int l, int r) {
-          return query(l, r, 1, 1, n);
-      }
+      void build() { build(1, 1, n); }
+      void upd(int idx, T val) { upd(idx, val, 1, 1, n); }
+      T query(int l, int r) { return query(l, r, 1, 1, n); }
   };
 
 snippet Mint
@@ -113,7 +103,7 @@ snippet Mint
           v = int((ll)v * o.v % mod);
           return *this;
       }
-      mint &operator/=(const mint &o) { return (*this) *= inv(o); }
+      mint &operator/=(const mint &o) { return (*this) *= inverse(o); }
       friend mint fpow(mint a, ll p) {
           mint ans = 1;
           assert(p >= 0);
@@ -121,7 +111,7 @@ snippet Mint
               if (p & 1) ans *= a;
           return ans;
       }
-      friend mint inv(const mint &a) {
+      friend mint inverse(const mint &a) {
           assert(a.v != 0);
           return fpow(a, mod - 2);
       }
@@ -129,6 +119,8 @@ snippet Mint
       mint operator-() const { return mint(-v); }
       mint &operator++() { return *this += 1; }
       mint &operator--() { return *this -= 1; }
+      mint operator++(int) { mint ret = *this; ++*this; return ret; }
+      mint operator--(int) { mint ret = *this; --*this; return ret; }
       friend mint operator+(mint a, const mint &b) { return a += b; }
       friend mint operator-(mint a, const mint &b) { return a -= b; }
       friend mint operator*(mint a, const mint &b) { return a *= b; }
