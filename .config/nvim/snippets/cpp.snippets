@@ -68,8 +68,8 @@ snippet segtree
       T query(int l, int r) { return query(l, r, 1, 1, n); }
   };
 
-snippet Mint
-  template<int mod> struct mint {
+snippet modint
+  template <int mod> struct mint {
       int v;
       explicit operator int() const { return v; } // explicit -> don't silently convert to int
       mint() : v(0) {}
@@ -129,4 +129,131 @@ snippet Mint
   using mi = mint<M>;
   using vmi = vector<mi>;
 
+snippet fft
+  using cd = complex<double>;
+  const double PI = acos(-1);
+
+  void fft(vector<cd>& a, bool invert = false) {
+      int n = a.size();
+
+      for (int i = 1, j = 0; i < n; i++) {
+          int bit = n >> 1;
+          for (; j & bit; bit >>= 1) j ^= bit;
+          j ^= bit;
+          if (i < j) swap(a[i], a[j]);
+      }
+
+      for (int len = 2; len <= n; len <<= 1) {
+          double ang = 2 * PI / len * (invert ? -1 : 1);
+          cd wlen(cos(ang), sin(ang));
+          for (int i = 0; i < n; i += len) {
+              cd w(1);
+              for (int j = 0; j < len / 2; j++) {
+                  cd u = a[i + j], v = a[i + j + len / 2] * w;
+                  a[i + j] = u + v;
+                  a[i + j + len / 2] = u - v;
+                  w *= wlen;
+              }
+          }
+      }
+
+      if (invert) {
+          for (cd & x : a) x /= n;
+      }
+  }
+
+  template <class T>
+  vector<T> convolution_fft(vector<T> a, vector<T> b) {
+      if (a.empty() || b.empty()) return {};
+      int x = sz(a) + sz(b) - 1;
+      int L = 32 - __builtin_clz(x), n = 1 << L;
+      a.resize(n);
+      b.resize(n);
+      fft(a);
+      fft(b);
+      for (int i = 0; i < n; i++) a[i] *= b[i];
+      fft(a, true);
+      a.resize(x);
+      return a;
+  }
+
+snippet ntt
+  const mi ROOT = 3; // mod 998244353
+  const int LN = 23; // 119 * 2^23 + 1
+  const int Z = 1 << LN;
+  vmi root(Z);
+
+  void fft(vector<mi>& a, bool invert = false) {
+      static const bool initialized = []{
+          mi u = fpow(ROOT, (M - 1) >> LN);
+          root[0] = 1;
+          rep (i, 1, Z - 1) root[i] = u * root[i - 1];
+          return true;
+      }();
+
+      int n = a.size();
+
+      for (int i = 1, j = 0; i < n; i++) {
+          int bit = n >> 1;
+          for (; j & bit; bit >>= 1) j ^= bit;
+          j ^= bit;
+          if (i < j) swap(a[i], a[j]);
+      }
+
+      for (int len = 2; len <= n; len <<= 1) {
+          mi wlen = invert ? root[Z - Z / len] : root[Z / len];
+          for (int i = 0; i < n; i += len) {
+              mi w = 1;
+              for (int j = 0; j < len / 2; j++) {
+                  mi u = a[i + j], v = a[i + j + len / 2] * w;
+                  a[i + j] = u + v;
+                  a[i + j + len / 2] = u - v;
+                  w *= wlen;
+              }
+          }
+      }
+
+      if (invert) {
+          mi inv = inverse(mi(n));
+          for (auto &x : a) x *= inv;
+      }
+  }
+
+  vmi convolution(vmi a, vmi b) {
+      if (a.empty() || b.empty()) return {};
+      int x = sz(a) + sz(b) - 1;
+      int L = 32 - __builtin_clz(x), n = 1 << L;
+      a.resize(n);
+      b.resize(n);
+      fft(a);
+      fft(b);
+      for (int i = 0; i < n; i++) a[i] *= b[i];
+      fft(a, true);
+      a.resize(x);
+      return a;
+  }
+
+snippet bostonmori
+  // find coefficient of x^n in O(d * log(d) * log(n)); Q[0] != 0
+  mi bostan_mori(vmi P, vmi Q, ll n) {
+      while (n > 0) {
+          vmi Qm = Q;
+          for (int i = 1; i < sz(Qm); i += 2)
+              Qm[i] = -Qm[i];
+
+          vmi PQ = convolution(P, Qm);
+          vmi QQ = convolution(Q, Qm);
+
+          vmi nP, nQ;
+          for (int i = (n & 1); i < sz(PQ); i += 2)
+              nP.pb(PQ[i]);
+          for (int i = 0; i < sz(QQ); i += 2)
+              nQ.pb(QQ[i]);
+
+          P = nP;
+          Q = nQ;
+          n >>= 1;
+      }
+      return P[0] / Q[0];
+  }
 
