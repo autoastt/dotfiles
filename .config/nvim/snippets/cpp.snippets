@@ -233,18 +233,184 @@ snippet ntt
       return a;
   }
 
-snippet bostonmori
+snippet fps
+  struct FPS : vmi {
+      using vmi::vector;
+
+      // 998244353 = 119 * 2^23 + 1
+      static const int K = 23, C = 119, R = 3;
+      static mi w[K + 1], w_inv[K + 1];
+      static bool init_NTT;
+
+      void NTT(bool invert) {
+          if (!init_NTT) {
+              w[K] = fpow(mi(R), C);
+              for (int i = K - 1; i >= 0; i--) w[i] = w[i + 1] * w[i + 1];
+              for (int i = 0; i <= K; i++) w_inv[i] = inverse(w[i]);
+              init_NTT = true;
+          }
+
+          int n = this->size();
+          FPS tmp = *this;
+
+          for (int i = 0; i < n; i++) {
+              int idx = 0;
+              int lgn = __lg(n);
+              for (int j = lgn - 1; j >= 0; j--)
+                  idx = (idx << 1) | ((i >> (lgn - j - 1)) & 1);
+              (*this)[idx] = tmp[i];
+          }
+
+          for (int l = 2; l <= n; l <<= 1) {
+              mi w_l = invert ? w_inv[__lg(l)] : w[__lg(l)];
+              for (int i = 0; i < n; i += l) {
+                  mi w_cur = 1;
+                  for (int j = 0; j < (l >> 1); j++) {
+                      mi t = (*this)[i + j + (l >> 1)] * w_cur;
+                      (*this)[i + j + (l >> 1)] = (*this)[i + j] - t;
+                      (*this)[i + j] = (*this)[i + j] + t;
+                      w_cur *= w_l;
+                  }
+              }
+          }
+
+          if (invert) {
+              mi inv_n = inverse(mi(n));
+              for (int i = 0; i < n; i++) (*this)[i] *= inv_n;
+          }
+      }
+
+      FPS& operator+=(FPS &b) {
+          if (this->size() < b.size()) this->resize(b.size(), 0);
+          for (int i = 0; i < (int)b.size(); i++) (*this)[i] += b[i];
+          return *this;
+      }
+
+      FPS& operator-=(FPS &b) {
+          if (this->size() < b.size()) this->resize(b.size(), 0);
+          for (int i = 0; i < (int)b.size(); i++) (*this)[i] -= b[i];
+          return *this;
+      }
+
+      FPS& operator*=(FPS b) {
+          int mxSz = (int)this->size() + (int)b.size() - 1;
+          int n = (mxSz == 1) ? 2 : (1 << (__lg(mxSz - 1) + 1));
+
+          this->resize(n, 0);
+          b.resize(n, 0);
+
+          this->NTT(false);
+          b.NTT(false);
+          for (int i = 0; i < n; i++) (*this)[i] *= b[i];
+          this->NTT(true);
+
+          this->resize(mxSz);
+          return *this;
+      }
+
+      FPS& operator*=(mi b) {
+          for (int i = 0; i < (int)this->size(); i++) (*this)[i] *= b;
+          return *this;
+      }
+
+      FPS integral() {
+          vmi Inv(this->size() + 1);
+          Inv[1] = 1;
+          for (int i = 2; i < (int)Inv.size(); i++)
+              Inv[i] = mi(M - M / i) * Inv[M % i];
+
+          FPS Q(this->size() + 1, 0);
+          for (int i = 0; i < (int)this->size(); i++)
+              Q[i + 1] = (*this)[i] * Inv[i + 1];
+          return Q;
+      }
+
+      FPS derivative() {
+          assert(!this->empty());
+          FPS Q((int)this->size() - 1);
+          for (int i = 1; i < (int)this->size(); i++)
+              Q[i - 1] = (*this)[i] * i;
+          return Q;
+      }
+
+      FPS inv(int k) {
+          assert(!this->empty() && (*this)[0] != 0);
+          FPS Q(1, inverse((*this)[0]));
+          for (int i = 1; (1 << (i - 1)) < k; i++) {
+              FPS P = *this;
+              P.resize(1 << i, 0);
+              Q = Q * (FPS(1, 2) - P * Q);
+              Q.resize(1 << i, 0);
+          }
+          Q.resize(k);
+          return Q;
+      }
+
+      FPS log(int k) {
+          assert(!this->empty() && (*this)[0] == 1);
+          FPS Q = (this->derivative() * this->inv(k));
+          Q.resize(k - 1);
+          return Q.integral();
+      }
+
+      FPS exp(int k) {
+          assert(!this->empty() && (*this)[0] == 0);
+          FPS Q(1, 1);
+          for (int i = 1; (1 << (i - 1)) < k; i++) {
+              FPS P = *this;
+              P.resize(1 << i, 0);
+              Q = Q * (FPS(1, 1) + P - Q.log(1 << i));
+              Q.resize(1 << i, 0);
+          }
+          Q.resize(k);
+          return Q;
+      }
+
+      FPS pow(long long idx, int k) {
+          if (idx == 0) {
+              FPS res(k, 0);
+              res[0] = 1;
+              return res;
+          }
+          for (int i = 0; i < (int)this->size() && (long long)i * idx < k; i++) {
+              if ((*this)[i] != 0) {
+                  mi inv = inverse((*this)[i]);
+                  FPS Q((int)this->size() - i);
+                  for (int j = i; j < (int)this->size(); j++)
+                      Q[j - i] = (*this)[j] * inv;
+                  Q = (Q.log(k) * idx).exp(k);
+
+                  FPS res(k, 0);
+                  mi pw = fpow((*this)[i], idx);
+                  for (int j = 0; j + (long long)i * idx < k; j++)
+                      res[j + i * idx] = Q[j] * pw;
+                  return res;
+              }
+          }
+          return FPS(k, 0);
+      }
+
+      friend FPS operator+(FPS a, FPS b) { return a += b; }
+      friend FPS operator-(FPS a, FPS b) { return a -= b; }
+      friend FPS operator*(FPS a, FPS b) { return a *= b; }
+      friend FPS operator*(FPS a, mi b) { return a *= b; }
+  };
+  bool FPS::init_NTT = false;
+  mi FPS::w[K + 1];
+  mi FPS::w_inv[K + 1];
+
+snippet bostanmori
   // find coefficient of x^n in O(d * log(d) * log(n)); Q[0] != 0
-  mi bostan_mori(vmi P, vmi Q, ll n) {
+  mi bostan_mori(FPS P, FPS Q, ll n) {
       while (n > 0) {
-          vmi Qm = Q;
+          FPS Qm = Q;
           for (int i = 1; i < sz(Qm); i += 2)
               Qm[i] = -Qm[i];
 
-          vmi PQ = convolution(P, Qm);
-          vmi QQ = convolution(Q, Qm);
+          FPS PQ = P * Qm;
+          FPS QQ = Q * Qm;
 
-          vmi nP, nQ;
+          FPS nP, nQ;
           for (int i = (n & 1); i < sz(PQ); i += 2)
               nP.pb(PQ[i]);
           for (int i = 0; i < sz(QQ); i += 2)
